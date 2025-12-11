@@ -150,6 +150,37 @@ def start(
     typer.echo(f"Dashboard:           http://localhost:{dash_port}")
 
 @app.command()
+def test():
+    """
+    Run full stack tests (Frontend Lint/Build + Backend Unit Tests).
+    """
+    typer.secho("\n=== Running NexPyRS Test Suite ===\n", fg=typer.colors.CYAN, bold=True)
+    
+    # 1. Frontend Checks
+    typer.secho("[1/3] Frontend: Linting...", fg=typer.colors.MAGENTA)
+    try:
+        run_cmd("npm run lint")
+        typer.secho(" [PASS] Linting Clean.", fg=typer.colors.GREEN)
+    except SystemExit:
+        typer.secho(" [FAIL] Linting Issues Found.", fg=typer.colors.RED)
+
+    typer.secho("\n[2/3] Frontend: Dry-Run Build...", fg=typer.colors.MAGENTA)
+    try:
+        run_cmd("npm run build")
+        typer.secho(" [PASS] Build Successful.", fg=typer.colors.GREEN)
+    except SystemExit:
+        typer.secho(" [FAIL] Build Failed.", fg=typer.colors.RED)
+
+    # 2. Backend Checks
+    typer.secho("\n[3/3] Backend: Unit Tests (pytest)...", fg=typer.colors.MAGENTA)
+    try:
+        # We assume pytest is installed in the environment
+        run_cmd("pytest api/tests")
+        typer.secho(" [PASS] Backend Tests Passed.", fg=typer.colors.GREEN)
+    except SystemExit:
+        typer.secho(" [FAIL] Backend Tests Failed.", fg=typer.colors.RED)
+
+@app.command()
 def dev():
     """
     Start local development (Next.js dev server).
