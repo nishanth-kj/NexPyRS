@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Start Services
+        run: |
+          docker-compose -f docker-compose.yml up --build -d
+
+      - name: Wait for services to be ready
+        run: sleep 20
+
+      - name: Smoke Test - API Health
+        run: |
+          curl --fail http://localhost/api/health
+
+      - name: Smoke Test - Rust Health
+        run: |
+          curl --fail http://localhost/rust/health
+
+      - name: Smoke Test - GraphQL
+        run: |
+          curl --fail -X POST -H "Content-Type: application/json" -d '{"query":"{ users { id name } }"}' http://localhost/graphql
+
+      - name: Smoke Test - gRPC Echo
+        run: |
+          # We run the client_test.py inside the grpcsvc container to avoid installing python/grpc locally on runner
+          docker-compose exec -T grpcsvc python client_test.py
+
+      - name: Tear Down
+        if: always()
+        run: docker-compose down

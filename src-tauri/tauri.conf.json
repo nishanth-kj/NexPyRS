@@ -1,0 +1,42 @@
+{
+    "build": {
+        "beforeDevCommand": "npm run dev",
+        "beforeBuildCommand": "npm run build:tauri",
+        "devPath": "http://localhost:3000",
+        "distDir": "../out",
+        "withGlobalTauri": true
+    },
+    "package": {
+        "productName": "nexpyrs",
+        "version": "0.1.0"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": false,
+            "shell": {
+                "all": false,
+                "open": true
+            }
+        },
+        "bundle": {
+            "active": true,
+            "targets": "all",
+            "identifier": "com.nexpyrs.dev",
+            "icon": [
+                "icons/icon.svg"
+            ]
+        },
+        "security": {
+            "csp": null
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "resizable": true,
+                "title": "NexPyRS",
+                "width": 800,
+                "height": 600
+            }
+        ]
+    }
+}

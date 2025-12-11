@@ -1,0 +1,13 @@
+[project]
+name = "nexpyrs-grpcsvc"
+version = "0.1.0"
+description = "NexPyRS gRPC Service"
+requires-python = ">=3.11"
+dependencies = [
+    "grpcio",
+    "grpcio-tools"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
