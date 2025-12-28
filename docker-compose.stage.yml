@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # --- Reverse Proxy (Staging) ---
+  traefik:
+    image: traefik:v3.0
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - nexnet
+
+  # --- Database (Staging) ---
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${STAGING_DB_PASSWORD:-staging_pass}
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=nexpyrs_staging
+    volumes:
+      - nexpyrs-db-stage:/var/lib/postgresql/data
+    networks:
+      - nexnet
+
+  # --- Frontend (Staging) ---
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api.stage.nexpyrs.dev
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend-stage.rule=Host(`stage.nexpyrs.dev`)"
+      - "traefik.http.services.frontend-stage.loadbalancer.server.port=3000"
+
+  # --- FastAPI (Staging) ---
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.fastapi
+    restart: always
+    environment:
+      - POSTGRES_SERVER=db
+      - ENVIRONMENT=staging
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-stage.rule=Host(`api.stage.nexpyrs.dev`)"
+      - "traefik.http.services.api-stage.loadbalancer.server.port=8000"
+
+volumes:
+  nexpyrs-db-stage:
+
+
+networks:
+  nexnet:
+    driver: bridge

@@ -144,19 +144,19 @@ This allows accessing services directly:
 
 ## 🐳 Docker Commands
 
-### Start all services
+### Multi-Environment Support
+
+This project includes specialized Docker configurations for different environments:
+
+| Environment | Command | Description |
+|-------------|---------|-------------|
+| **Development** | `docker-compose -f docker-compose.dev.yml up -d` | Hot-reloading, debug mode, direct port access. |
+| **Staging**     | `docker-compose -f docker-compose.stage.yml up -d` | Pre-production testing with staging URLs. |
+| **Production**  | `docker-compose -f docker-compose.prod.yml up -d` | Hardened security, HTTPS (TLS), resource limits. |
+
+### Default Start
 ```bash
 docker-compose up -d
-```
-
-### Rebuild and restart
-```bash
-docker-compose up -d --build
-```
-
-### Stop all services
-```bash
-docker-compose down
 ```
 
 ### View logs

@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # --- Reverse Proxy ---
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8090:8080" # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - nexnet
+
+  # --- Database ---
+  db:
+    image: postgres:17
+    ports:
+      - "5432:5432" # Direct access for DB tools
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=nexpyrs
+    volumes:
+      - nexpyrs-db-dev:/var/lib/postgresql/data
+    networks:
+      - nexnet
+
+  # --- Frontend (Dev Mode) ---
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api.localhost
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  # --- FastAPI (Reload Enabled) ---
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.fastapi
+    volumes:
+      - ./api/fastapi_app:/app/fastapi_app
+    environment:
+      - DEBUG=True
+      - POSTGRES_SERVER=db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+
+  # --- Django (Dev Mode) ---
+  django:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.django
+    volumes:
+      - ./api/django_app:/app/django_app
+    environment:
+      - DEBUG=True
+      - POSTGRES_SERVER=db
+    command: python manage.py runserver 0.0.0.0:8001
+    ports:
+      - "8001:8001"
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=Host(`django.localhost`)"
+      - "traefik.http.services.django.loadbalancer.server.port=8001"
+
+volumes:
+  nexpyrs-db-dev:
+
+
+networks:
+  nexnet:
+    driver: bridge
