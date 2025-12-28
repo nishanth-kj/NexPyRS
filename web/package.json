@@ -9,7 +9,10 @@
         "lint": "next lint",
         "proto:gen": "protoc -I=../grpcsvc/proto ../grpcsvc/proto/nexpyrs.proto --js_out=import_style=commonjs,binary:./libs --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./libs",
         "tauri": "tauri",
-        "build:tauri": "cross-env NEXT_PUBLIC_TAURI_BUILD=true next build"
+        "build:tauri": "cross-env NEXT_PUBLIC_TAURI_BUILD=true next build",
+        "build:github": "cross-env NEXT_PUBLIC_GITHUB_PAGES=true next build",
+        "export": "npm run build:github",
+        "preview": "npx serve out -s -l 3000"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",

@@ -28,7 +28,7 @@ yarn-error.log*
 
 # Next.js
 .next/
-out/
+# out/
 
 # Rust
 target/
