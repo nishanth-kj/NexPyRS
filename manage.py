@@ -62,12 +62,12 @@ def install():
     
     # 2. Python (managed by uv itself for this run, but we sync workspace)
     typer.secho("\n1. Syncing Python Workspace (uv)", fg=typer.colors.GREEN)
-    run_cmd("uv sync")
+    run_cmd("uv sync", cwd="api")
 
     # 3. Node.js
     typer.secho("\n2. Installing Node.js dependencies", fg=typer.colors.GREEN)
     if shutil.which("npm"):
-        run_cmd("npm install")
+        run_cmd("npm install", cwd="web")
     else:
         typer.secho("npm not found! Frontend setup skipped.", fg=typer.colors.YELLOW)
 
@@ -159,14 +159,14 @@ def test():
     # 1. Frontend Checks
     typer.secho("[1/3] Frontend: Linting...", fg=typer.colors.MAGENTA)
     try:
-        run_cmd("npm run lint")
+        run_cmd("npm run lint", cwd="web")
         typer.secho(" [PASS] Linting Clean.", fg=typer.colors.GREEN)
     except SystemExit:
         typer.secho(" [FAIL] Linting Issues Found.", fg=typer.colors.RED)
 
     typer.secho("\n[2/3] Frontend: Dry-Run Build...", fg=typer.colors.MAGENTA)
     try:
-        run_cmd("npm run build")
+        run_cmd("npm run build", cwd="web")
         typer.secho(" [PASS] Build Successful.", fg=typer.colors.GREEN)
     except SystemExit:
         typer.secho(" [FAIL] Build Failed.", fg=typer.colors.RED)
@@ -175,7 +175,7 @@ def test():
     typer.secho("\n[3/3] Backend: Unit Tests (pytest)...", fg=typer.colors.MAGENTA)
     try:
         # We assume pytest is installed in the environment
-        run_cmd("pytest api/tests")
+        run_cmd("uv run pytest fastapi/tests", cwd="api")
         typer.secho(" [PASS] Backend Tests Passed.", fg=typer.colors.GREEN)
     except SystemExit:
         typer.secho(" [FAIL] Backend Tests Failed.", fg=typer.colors.RED)

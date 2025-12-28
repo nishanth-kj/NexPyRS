@@ -22,7 +22,7 @@ services:
   # --- Frontend (Next.js) ---
   frontend:
     build:
-      context: .
+      context: ./web
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
@@ -34,7 +34,7 @@ services:
 
   # --- Backend API (FastAPI) ---
   api:
-    build: ./api
+    build: ./api/fastapi_app
     environment:
       - PROJECT_NAME=${PROJECT_NAME:-NexPyRS}
       - POSTGRES_SERVER=db
@@ -49,6 +49,26 @@ services:
       - "traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api.entrypoints=web,websecure"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
+    networks:
+      - nexnet
+
+  # --- Django Application ---
+  django:
+    build: ./api/django_app
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-nexpyrs}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=Host(`localhost`) && PathPrefix(`/django`)"
+      - "traefik.http.routers.django.entrypoints=web,websecure"
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
     networks:
       - nexnet
 
