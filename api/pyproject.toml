@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "nexpyrs-monorepo"
 version = "0.1.0"
 description = "NexPyRS Monorepo Workspace"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "typer",
     "pytest",

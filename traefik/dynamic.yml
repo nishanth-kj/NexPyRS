@@ -1,0 +1,46 @@
+http:
+  routers:
+    frontend:
+      rule: "Host(`localhost`)"
+      service: frontend
+      entryPoints:
+        - web
+    
+    api:
+      rule: "Host(`api.localhost`)"
+      service: api
+      entryPoints:
+        - web
+    
+    django:
+      rule: "Host(`django.localhost`)"
+      service: django
+      entryPoints:
+        - web
+    
+    pgadmin:
+      rule: "Host(`pgadmin.localhost`)"
+      service: pgadmin
+      entryPoints:
+        - web
+
+  services:
+    frontend:
+      loadBalancer:
+        servers:
+          - url: "http://nexpyrs-frontend-1:3000"
+    
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://nexpyrs-api-1:8000"
+    
+    django:
+      loadBalancer:
+        servers:
+          - url: "http://nexpyrs-django-1:8000"
+    
+    pgadmin:
+      loadBalancer:
+        servers:
+          - url: "http://nexpyrs-pgadmin-1:80"

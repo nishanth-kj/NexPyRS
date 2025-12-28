@@ -12,16 +12,14 @@ RUN apt-get update && apt-get install -y \
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-# Copy project definition
-COPY pyproject.toml .
-
 # Install dependencies using uv
-# We create a venv and install into it, or configure uv to install to system
 ENV UV_SYSTEM_PYTHON=1
 RUN uv pip install --system django>=5.0.0 psycopg2-binary>=2.9.0 gunicorn>=21.2.0
 
 # Copy application code
-COPY . .
+COPY django_app/ ./django_app/
+
+WORKDIR /app/django_app
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1

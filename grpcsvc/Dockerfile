@@ -1,7 +1,13 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
+
 WORKDIR /app
-RUN pip install uv
-COPY pyproject.toml .
-RUN uv pip install --system .
+
+# Install grpcio dependencies directly with pip
+RUN pip install --no-cache-dir grpcio grpcio-tools
+
+# Copy application code
 COPY . .
+
+EXPOSE 50051
+
 CMD ["python", "server.py"]
