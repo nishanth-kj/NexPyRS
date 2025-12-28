@@ -23,6 +23,12 @@ http:
       service: pgadmin
       entryPoints:
         - web
+    
+    jenkins:
+      rule: "Host(`jenkins.localhost`)"
+      service: jenkins
+      entryPoints:
+        - web
 
   services:
     frontend:
@@ -44,3 +50,8 @@ http:
       loadBalancer:
         servers:
           - url: "http://nexpyrs-pgadmin-1:80"
+    
+    jenkins:
+      loadBalancer:
+        servers:
+          - url: "http://nexpyrs-jenkins-1:8080"
