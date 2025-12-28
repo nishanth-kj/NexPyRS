@@ -1,112 +1,379 @@
 # NexPyRS
 
-A fully working monorepo with Next.js, FastAPI, Rust (Actix), Python gRPC, PostgreSQL, and basic CI.
+A production-ready full-stack monorepo featuring Next.js, FastAPI, Django, Rust (Actix), Python gRPC, PostgreSQL, Jenkins CI/CD, and Traefik reverse proxy - all containerized with Docker.
 
-## Quickstart
+## 🚀 Quick Start
 
-### Quickstart (Dynamic Setup)
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Required)
+- [uv](https://github.com/astral-sh/uv) (Recommended for local development)
 
-This project uses a dynamic installer that allows you to customize ports, database credentials, and project names.
+### Getting Started
 
-**Prerequisites**:
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [uv](https://github.com/astral-sh/uv) (The script can attempt to install it, but pre-installing is recommended)
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nishanth-kj/NexPyRS.git
+   cd NexPyRS
+   ```
 
-**Installation**:
-0.  **Check Requirements**:
-    ```bash
-    uv run manage.py check
-    ```
+2. **Start all services**
+   ```bash
+   docker-compose up -d --build
+   ```
 
-1.  **Install Dependencies**:
-    ```bash
-    uv run manage.py install
-    ```
+3. **Access your services** (see URLs below)
 
-2.  **Configure & Start**:
-    ```bash
-    # Interactive setup (will prompt for ports/names)
-    uv run manage.py setup
+That's it! All services will be running and accessible through Traefik.
 
-    # Start the stack
-    uv run manage.py start
-    ```
+## 🌐 Service URLs
 
-### One-Click Launchers (Default Settings)
-If you prefer defaults, you can use the legacy scripts:
-**Windows**: `.\start.bat`
-**Linux/Mac**: `./start.sh`
+All services are accessible through **Traefik** reverse proxy with subdomain-based routing:
 
-### Full Reinstall (Uninstall & Fresh Install)
-If you want to wipe the Docker containers/volumes and rebuild everything from scratch (using **uv** for Python builds):
+| Service | URL | Description |
+|---------|-----|-------------|
+| **Frontend** | http://localhost | Next.js application (Port 80) |
+| **FastAPI** | http://api.localhost | FastAPI backend with auto docs |
+| **Django Admin** | http://django.localhost/admin | Django administration panel |
+| **PgAdmin** | http://pgadmin.localhost | PostgreSQL database management |
+| **Jenkins** | http://jenkins.localhost | CI/CD automation server |
+| **Traefik Dashboard** | http://localhost:8090 | Monitor all routes and services |
+| **gRPC Service** | http://grpc.localhost | Python gRPC service |
+| **Rust Service** | http://rust.localhost | Actix-web microservice |
 
-**Windows**: `.\reinstall.ps1`
-**Linux/Mac**: `./reinstall.sh`
+### 🔐 Default Credentials
 
-### Local Development (Python with uv)
-To set up your local Python environment for intellisense/testing using `uv`:
+**PgAdmin:**
+- Email: `admin@nexpyrs.dev`
+- Password: `admin`
 
-**Windows**: `.\local_dev_setup_uv.ps1`
+**PostgreSQL:**
+- User: `postgres`
+- Password: `password`
+- Database: `nexpyrs`
 
-### Desktop Development (Tauri)
-This project uses **Rust** and **Tauri**. We have provided a script to verify you have the best tools (`rustup`) installed and to set up the dependencies.
+**Jenkins:**
+- Get initial password:
+  ```bash
+  docker exec nexpyrs-jenkins-1 cat /var/jenkins_home/secrets/initialAdminPassword
+  ```
 
-**Windows**:
-```powershell
-.\setup_desktop.ps1
+## 📁 Project Structure
+
+```
+NexPyRS/
+├── web/                    # Next.js 14 frontend
+│   ├── app/               # App router pages
+│   ├── components/        # React components
+│   └── Dockerfile
+├── api/                    # Python backend services
+│   ├── fastapi_app/       # FastAPI application
+│   ├── django_app/        # Django application
+│   ├── Dockerfile.fastapi
+│   └── Dockerfile.django
+├── grpcsvc/               # Python gRPC service
+│   ├── server.py
+│   └── Dockerfile
+├── rustsvc/               # Rust Actix-web service
+│   ├── src/
+│   └── Dockerfile
+├── traefik/               # Traefik configuration
+│   └── dynamic.yml        # Static route definitions
+├── docker-compose.yml     # Main orchestration file
+└── .env.example          # Environment variables template
+
 ```
 
-**Linux / Mac**:
+## 🛠️ Development
+
+### Local Development Setup
+
+1. **Copy environment file**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Install Python dependencies** (optional, for IDE support)
+   ```bash
+   cd api
+   uv sync
+   ```
+
+3. **Install Node dependencies** (optional, for IDE support)
+   ```bash
+   cd web
+   npm install
+   ```
+
+### Running Services Locally (Without Docker)
+
+**Frontend:**
 ```bash
-./setup_desktop.sh
+cd web
+npm run dev
+# Access at http://localhost:3000
 ```
 
-After running the setup, you can launch the app:
+**FastAPI:**
 ```bash
-cd frontend
-npm run tauri dev
+cd api
+uv run main.py fastapi
+# Access at http://localhost:8000
 ```
 
-### Manual Setup
+**Django:**
+```bash
+cd api
+uv run main.py django
+# Access at http://localhost:8001
+```
 
-1.  **Environment Setup**:
-    ```bash
-    cp .env.example .env
-    ```
+### Direct Port Access (For Debugging)
 
-2.  **Start Services**:
-    ```bash
-    docker-compose up --build -d
-    ```
+Uncomment the `ports` section in `docker-compose.yml` to enable direct access:
 
-3.  **Access Endpoints**:
-    *   **Frontend**: [http://localhost](http://localhost)
-    *   **FastAPI Health**: [http://localhost/api/health](http://localhost/api/health)
-    *   **GraphQL Playground**: [http://localhost/graphql](http://localhost/graphql)
-    *   **Rust Health**: [http://localhost/rust/health](http://localhost/rust/health)
-    *   **pgAdmin**: [http://localhost:8081](http://localhost:8081)
-    *   **Traefik Dashboard**: [http://localhost:8090](http://localhost:8090)
+```yaml
+# Example for frontend:
+ports:  # Uncomment for direct access (bypassing Traefik)
+  - "3000:3000"
+```
 
-## Development Notes
+This allows accessing services directly:
+- Frontend: `http://localhost:3000`
+- FastAPI: `http://localhost:8000`
+- Django: `http://localhost:8001`
 
-### Traffic Management (Traefik)
-We now use **Traefik** as the reverse proxy instead of Nginx.
-- Traefik listens on port `80` and routes traffic based on URL paths (`/api`, `/rust`, `/`) to the appropriate containers via Docker labels.
-- The Traefik Dashboard is available at port `8090`.
+## 🐳 Docker Commands
 
-### Python Services
-We use `uv` for package management in the Docker builds for faster install times.
-- `api/`
-- `grpcsvc/`
+### Start all services
+```bash
+docker-compose up -d
+```
 
-### gRPC Support
-The `grpcsvc` runs on port 50051. 
-Envoy proxies gRPC-Web traffic from `http://localhost:8080` (mapped internally) which Nginx can route or you can hit directly if exposed.
-In this setup, Envoy is at `envoy:8080`.
+### Rebuild and restart
+```bash
+docker-compose up -d --build
+```
 
-### Troubleshooting
-- **Database Connection**: If `api` fails to connect, give `db` a few seconds to initialize. Docker Compose `depends_on` starts containers but doesn't wait for DB readiness.
-- **Ports**: Ensure ports 80, 3000, 8000, 8001, 8081, 50051 are free.
+### Stop all services
+```bash
+docker-compose down
+```
 
-## CI/CD
-A GitHub Actions workflow is included in `.github/workflows/ci.yml`. It builds images and runs smoke tests.
+### View logs
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f frontend
+```
+
+### Restart a service
+```bash
+docker-compose restart frontend
+```
+
+### Check running containers
+```bash
+docker-compose ps
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root (use `.env.example` as template):
+
+```env
+# Project
+PROJECT_NAME=NexPyRS
+STACK_NAME=nexpyrs
+DOMAIN=localhost
+
+# Database
+POSTGRES_SERVER=db
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_DB=nexpyrs
+
+# PgAdmin
+PGADMIN_DEFAULT_EMAIL=admin@nexpyrs.dev
+PGADMIN_DEFAULT_PASSWORD=admin
+
+# Ports (for direct access)
+FRONTEND_PORT=3000
+API_PORT=8000
+DJANGO_PORT=8001
+```
+
+### Traefik Configuration
+
+Traefik uses two configuration methods:
+
+1. **Docker Labels** (in `docker-compose.yml`) - For auto-discovery
+2. **Static File** (`traefik/dynamic.yml`) - For manual route definitions
+
+The static file is used as a fallback on Windows where Docker socket access may have issues.
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+**Frontend:**
+- Next.js 14 (React 18, App Router)
+- TailwindCSS
+- Shadcn UI
+- TypeScript
+
+**Backend:**
+- FastAPI (Python 3.12) - REST API
+- Django 5.0 (Python 3.12) - Admin & ORM
+- Python gRPC - Microservices communication
+- Rust Actix-web - High-performance service
+
+**Infrastructure:**
+- PostgreSQL 17 - Database
+- Traefik v3.0 - Reverse proxy & load balancer
+- Jenkins LTS - CI/CD automation
+- PgAdmin - Database management
+- Docker & Docker Compose
+
+### Traffic Flow
+
+```
+Browser Request
+    ↓
+Traefik (Port 80)
+    ↓
+├─→ localhost              → Frontend (Next.js)
+├─→ api.localhost          → FastAPI Backend
+├─→ django.localhost       → Django Backend
+├─→ pgadmin.localhost      → PgAdmin
+├─→ jenkins.localhost      → Jenkins
+├─→ grpc.localhost         → gRPC Service
+└─→ rust.localhost         → Rust Service
+```
+
+## 🔄 CI/CD
+
+### GitHub Actions
+
+A CI/CD workflow is included in `.github/workflows/ci.yml` that:
+- Runs backend tests (FastAPI & Django)
+- Runs frontend tests (linting, build, unit tests)
+- Builds Docker images
+- Performs code quality checks (ruff, mypy)
+
+### Jenkins
+
+Jenkins is pre-configured with Docker-in-Docker support for building and deploying containers.
+
+**First-time setup:**
+1. Access http://jenkins.localhost
+2. Get password: `docker exec nexpyrs-jenkins-1 cat /var/jenkins_home/secrets/initialAdminPassword`
+3. Install suggested plugins
+4. Create admin user
+
+## 📊 Database Management
+
+### PgAdmin Access
+
+1. Go to http://pgadmin.localhost
+2. Login with credentials (see above)
+3. Add server:
+   - Host: `db`
+   - Port: `5432`
+   - Username: `postgres`
+   - Password: `password`
+
+### Direct Database Access
+
+```bash
+docker exec -it nexpyrs-db-1 psql -U postgres -d nexpyrs
+```
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd api
+uv run pytest
+```
+
+### Frontend Tests
+```bash
+cd web
+npm test
+```
+
+## 📝 API Documentation
+
+- **FastAPI Docs**: http://api.localhost/docs (Swagger UI)
+- **FastAPI ReDoc**: http://api.localhost/redoc
+- **Django Admin**: http://django.localhost/admin
+
+## 🐛 Troubleshooting
+
+### Port 80 shows 404
+- Restart Traefik: `docker-compose restart traefik`
+- Check Traefik dashboard: http://localhost:8090
+
+### Database connection errors
+- Wait 10-15 seconds for PostgreSQL to initialize
+- Check DB health: `docker-compose ps db`
+
+### Jenkins 403 Forbidden
+- This is normal - Jenkins is working
+- Just access http://jenkins.localhost in browser
+
+### Service not accessible
+```bash
+# Check if container is running
+docker-compose ps
+
+# View logs
+docker-compose logs <service-name>
+
+# Restart service
+docker-compose restart <service-name>
+```
+
+### Traefik can't discover containers (Windows)
+- The project uses static file configuration as fallback
+- Routes are defined in `traefik/dynamic.yml`
+- No action needed - everything should work
+
+## 🔐 Security Notes
+
+**For Production:**
+1. Change all default passwords in `.env`
+2. Enable HTTPS in Traefik configuration
+3. Set secure database credentials
+4. Configure proper CORS settings
+5. Enable authentication on all services
+6. Review and update security headers
+
+## 📚 Additional Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Django Documentation](https://docs.djangoproject.com/)
+- [Traefik Documentation](https://doc.traefik.io/traefik/)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](web/app/contribute/page.tsx) for guidelines.
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 👥 Authors
+
+- Nishanth KJ - [GitHub](https://github.com/nishanth-kj)
+
+---
+
+**Built with ❤️ using Next.js, FastAPI, Django, Rust, and Docker**
