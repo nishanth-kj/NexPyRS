@@ -2,8 +2,8 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api import deps
-from app.models.user import User, UserRead, UserCreate
+from controllers import deps
+from models.user import User, UserRead, UserCreate
 
 router = APIRouter()
 
