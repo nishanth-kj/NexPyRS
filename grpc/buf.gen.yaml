@@ -1,0 +1,41 @@
+version: v2
+plugins:
+  # Python - Generates standard Protobuf and gRPC stubs
+  - remote: buf.build/protocolbuffers/python:v28.2
+    out: generated/python
+  - remote: buf.build/grpc/python:v1.67.0
+    out: generated/python
+
+  # TypeScript/JavaScript - Generates ConnectRPC and standard TS interfaces
+  - remote: buf.build/bufbuild/es:v2.2.0
+    out: generated/ts
+    opt: target=ts
+  - remote: buf.build/connectrpc/es:v2.0.1
+    out: generated/ts
+    opt: target=ts
+
+  # Go - Generates Go structs and gRPC interfaces
+  - remote: buf.build/protocolbuffers/go:v1.35.1
+    out: generated/go
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go:v1.5.1
+    out: generated/go
+    opt: paths=source_relative
+
+  # Java - Generates Java classes and gRPC stubs
+  - remote: buf.build/protocolbuffers/java:v28.2
+    out: generated/java
+  - remote: buf.build/grpc/java:v1.68.0
+    out: generated/java
+
+  # C++ - Generates C++ headers and source files
+  - remote: buf.build/protocolbuffers/cpp:v28.2
+    out: generated/cpp
+  - remote: buf.build/grpc/cpp:v1.67.0
+    out: generated/cpp
+
+  # Rust - Generates Rust structs (prost) and gRPC services (tonic)
+  - remote: buf.build/community/neoeinstein-prost:v0.4.0
+    out: generated/rust
+  - remote: buf.build/community/neoeinstein-tonic:v0.4.0
+    out: generated/rust
