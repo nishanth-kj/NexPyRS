@@ -1,0 +1,74 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define global environment variables here
+        NODE_ENV = 'ci'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the repository
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo "Installing dependencies..."
+                // Example for Python:
+                // sh 'uv sync'
+                
+                // Example for Node:
+                // sh 'npm ci'
+            }
+        }
+
+        stage('Generate gRPC') {
+            steps {
+                echo "Generating gRPC code via Buf..."
+                // Example assuming buf is installed on the agent
+                // dir('grpc') {
+                //     sh 'buf generate'
+                // }
+            }
+        }
+
+        stage('Lint & Test') {
+            parallel {
+                stage('Python Tests') {
+                    steps {
+                        echo "Running Python tests..."
+                        // sh 'uv run pytest'
+                    }
+                }
+                stage('Rust Tests') {
+                    steps {
+                        echo "Running Rust tests..."
+                        // sh 'cargo test'
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building the project..."
+                // Build steps go here
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished. Archiving artifacts or cleaning up..."
+        }
+        success {
+            echo "Build successful!"
+        }
+        failure {
+            echo "Build failed! Please check the logs."
+        }
+    }
+}
