@@ -1,5 +1,5 @@
 # Build Stage
-FROM rust:1.80-slim-bullseye AS build
+FROM rust:1.97-slim-bullseye AS build
 WORKDIR /app
 COPY . .
 RUN cargo build --release
