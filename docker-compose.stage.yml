@@ -18,7 +18,7 @@ services:
 
   # --- Database (Staging) ---
   db:
-    image: postgres:17
+    build: ./database
     restart: always
     environment:
       - POSTGRES_PASSWORD=${STAGING_DB_PASSWORD:-staging_pass}
@@ -32,7 +32,7 @@ services:
   # --- Frontend (Staging) ---
   frontend:
     build:
-      context: ./web
+      context: ./ui_web
       dockerfile: Dockerfile
     restart: always
     environment:
@@ -47,8 +47,8 @@ services:
   # --- FastAPI (Staging) ---
   api:
     build:
-      context: ./api
-      dockerfile: Dockerfile.fastapi
+      context: .
+      dockerfile: api_fastapi/Dockerfile
     restart: always
     environment:
       - POSTGRES_SERVER=db
@@ -59,8 +59,210 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.api-stage.rule=Host(`api.stage.nexpyrs.dev`)"
       - "traefik.http.services.api-stage.loadbalancer.server.port=8000"
+  # --- Spring Boot API (Staging) ---
+  api_spring:
+    build:
+      context: .
+      dockerfile: api_spring/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spring-stage.rule=Host(`spring.stage.nexpyrs.dev`)"
+      - "traefik.http.services.spring-stage.loadbalancer.server.port=8080"
+  # --- Drogon C++ API (Staging) ---
+  api_dragon:
+    build:
+      context: .
+      dockerfile: api_dragon/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dragon-stage.rule=Host(`drogon.stage.nexpyrs.dev`)"
+      - "traefik.http.services.dragon-stage.loadbalancer.server.port=8080"
+
+  # --- Actix Rust API (Staging) ---
+  api_actix:
+    build:
+      context: .
+      dockerfile: api_actix/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actix-stage.rule=Host(`actix.stage.nexpyrs.dev`)"
+      - "traefik.http.services.actix-stage.loadbalancer.server.port=8080"
+  # --- Redis (Staging) ---
+  redis:
+    build:
+      context: .
+      dockerfile: redis/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- RabbitMQ (Staging) ---
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: rabbitmq/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- Websocket Service (Staging) ---
+  websocket:
+    build:
+      context: .
+      dockerfile: websocket/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.websocket-stage.rule=Host(`ws.stage.nexpyrs.dev`)"
+      - "traefik.http.services.websocket-stage.loadbalancer.server.port=8080"
+
+  # --- Website (Staging) ---
+  website:
+    build:
+      context: .
+      dockerfile: website/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website-stage.rule=Host(`website.stage.nexpyrs.dev`)"
+      - "traefik.http.services.website-stage.loadbalancer.server.port=5173"
+  # --- Next.js (Staging) ---
+  next:
+    build:
+      context: .
+      dockerfile: ui_next/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.next-stage.rule=Host(`next.stage.nexpyrs.dev`)"
+      - "traefik.http.services.next-stage.loadbalancer.server.port=3000"
+
+  # --- Angular (Staging) ---
+  angular:
+    build:
+      context: .
+      dockerfile: ui_angular/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.angular-stage.rule=Host(`angular.stage.nexpyrs.dev`)"
+      - "traefik.http.services.angular-stage.loadbalancer.server.port=4200"
+
+  # --- Vite (Staging) ---
+  vite:
+    build:
+      context: .
+      dockerfile: ui_vite/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vite-stage.rule=Host(`vite.stage.nexpyrs.dev`)"
+      - "traefik.http.services.vite-stage.loadbalancer.server.port=5173"
+
+  # --- Static Site (Staging) ---
+  site:
+    build:
+      context: .
+      dockerfile: site/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.site-stage.rule=Host(`site.stage.nexpyrs.dev`)"
+      - "traefik.http.services.site-stage.loadbalancer.server.port=80"
+  # --- Apache Kafka ---
+  kafka:
+    build:
+      context: .
+      dockerfile: kafka/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  # --- Kafka UI ---
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    restart: always
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=NexPyRS_Cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kafka-stage.rule=Host(`kafka.stage.nexpyrs.dev`)"
+      - "traefik.http.services.kafka-stage.loadbalancer.server.port=8080"
+  # --- Web3: Solidity / Ethereum (Hardhat) ---
+  hardhat-node:
+    build:
+      context: .
+      dockerfile: solidity/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- Web3: Solana (Test Validator) ---
+  solana-validator:
+    build:
+      context: .
+      dockerfile: solana/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+  # --- MCP Server ---
+  mcp:
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-stage.rule=Host(`mcp.stage.nexpyrs.dev`)"
+      - "traefik.http.services.mcp-stage.loadbalancer.server.port=3001"
+  # --- MongoDB ---
+  mongodb:
+    build:
+      context: .
+      dockerfile: mongodb/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    volumes:
+      - nexpyrs-mongo-stage:/data/db
 
 volumes:
+  nexpyrs-mongo-stage:
   nexpyrs-db-stage:
 
 

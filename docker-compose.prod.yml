@@ -24,7 +24,7 @@ services:
 
   # --- Database (Production) ---
   db:
-    image: postgres:17
+    build: ./database
     restart: always
     shm_size: 1g
     environment:
@@ -43,7 +43,7 @@ services:
   # --- Frontend (Production) ---
   frontend:
     build:
-      context: ./web
+      context: ./ui_web
       dockerfile: Dockerfile
     restart: always
     networks:
@@ -58,8 +58,8 @@ services:
   # --- FastAPI (Production) ---
   api:
     build:
-      context: ./api
-      dockerfile: Dockerfile.fastapi
+      context: .
+      dockerfile: api_fastapi/Dockerfile
     restart: always
     environment:
       - POSTGRES_SERVER=db
@@ -73,8 +73,232 @@ services:
       - "traefik.http.routers.api-prod.entrypoints=websecure"
       - "traefik.http.routers.api-prod.tls.certresolver=myresolver"
       - "traefik.http.services.api-prod.loadbalancer.server.port=8000"
+  # --- Spring Boot API (Production) ---
+  api_spring:
+    build:
+      context: .
+      dockerfile: api_spring/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spring-prod.rule=Host(`spring.nexpyrs.dev`)"
+      - "traefik.http.routers.spring-prod.entrypoints=websecure"
+      - "traefik.http.routers.spring-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.spring-prod.loadbalancer.server.port=8080"
+  # --- Drogon C++ API (Production) ---
+  api_dragon:
+    build:
+      context: .
+      dockerfile: api_dragon/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dragon-prod.rule=Host(`drogon.nexpyrs.dev`)"
+      - "traefik.http.routers.dragon-prod.entrypoints=websecure"
+      - "traefik.http.routers.dragon-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.dragon-prod.loadbalancer.server.port=8080"
+
+  # --- Actix Rust API (Production) ---
+  api_actix:
+    build:
+      context: .
+      dockerfile: api_actix/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actix-prod.rule=Host(`actix.nexpyrs.dev`)"
+      - "traefik.http.routers.actix-prod.entrypoints=websecure"
+      - "traefik.http.routers.actix-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.actix-prod.loadbalancer.server.port=8080"
+  # --- Redis (Production) ---
+  redis:
+    build:
+      context: .
+      dockerfile: redis/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- RabbitMQ (Production) ---
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: rabbitmq/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- Websocket Service (Production) ---
+  websocket:
+    build:
+      context: .
+      dockerfile: websocket/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.websocket-prod.rule=Host(`ws.nexpyrs.dev`)"
+      - "traefik.http.routers.websocket-prod.entrypoints=websecure"
+      - "traefik.http.routers.websocket-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.websocket-prod.loadbalancer.server.port=8080"
+
+  # --- Website (Production) ---
+  website:
+    build:
+      context: .
+      dockerfile: website/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website-prod.rule=Host(`website.nexpyrs.dev`)"
+      - "traefik.http.routers.website-prod.entrypoints=websecure"
+      - "traefik.http.routers.website-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.website-prod.loadbalancer.server.port=5173"
+  # --- Next.js (Production) ---
+  next:
+    build:
+      context: .
+      dockerfile: ui_next/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.next-prod.rule=Host(`next.nexpyrs.dev`)"
+      - "traefik.http.routers.next-prod.entrypoints=websecure"
+      - "traefik.http.routers.next-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.next-prod.loadbalancer.server.port=3000"
+
+  # --- Angular (Production) ---
+  angular:
+    build:
+      context: .
+      dockerfile: ui_angular/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.angular-prod.rule=Host(`angular.nexpyrs.dev`)"
+      - "traefik.http.routers.angular-prod.entrypoints=websecure"
+      - "traefik.http.routers.angular-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.angular-prod.loadbalancer.server.port=4200"
+
+  # --- Vite (Production) ---
+  vite:
+    build:
+      context: .
+      dockerfile: ui_vite/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vite-prod.rule=Host(`vite.nexpyrs.dev`)"
+      - "traefik.http.routers.vite-prod.entrypoints=websecure"
+      - "traefik.http.routers.vite-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.vite-prod.loadbalancer.server.port=5173"
+
+  # --- Static Site (Production) ---
+  site:
+    build:
+      context: .
+      dockerfile: site/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.site-prod.rule=Host(`site.nexpyrs.dev`)"
+      - "traefik.http.routers.site-prod.entrypoints=websecure"
+      - "traefik.http.routers.site-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.site-prod.loadbalancer.server.port=80"
+  # --- Apache Kafka ---
+  kafka:
+    build:
+      context: .
+      dockerfile: kafka/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  # --- Kafka UI ---
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    restart: always
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=NexPyRS_Cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kafka-prod.rule=Host(`kafka.nexpyrs.dev`)"
+      - "traefik.http.routers.kafka-prod.entrypoints=websecure"
+      - "traefik.http.routers.kafka-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.kafka-prod.loadbalancer.server.port=8080"
+  # --- Web3: Solidity / Ethereum (Hardhat) ---
+  hardhat-node:
+    build:
+      context: .
+      dockerfile: solidity/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+
+  # --- Web3: Solana (Test Validator) ---
+  solana-validator:
+    build:
+      context: .
+      dockerfile: solana/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+  # --- MCP Server ---
+  mcp:
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-prod.rule=Host(`mcp.nexpyrs.dev`)"
+      - "traefik.http.routers.mcp-prod.entrypoints=websecure"
+      - "traefik.http.routers.mcp-prod.tls.certresolver=myresolver"
+      - "traefik.http.services.mcp-prod.loadbalancer.server.port=3001"
+  # --- MongoDB ---
+  mongodb:
+    build:
+      context: .
+      dockerfile: mongodb/Dockerfile
+    restart: always
+    networks:
+      - nexnet
+    volumes:
+      - nexpyrs-mongo-prod:/data/db
 
 volumes:
+  nexpyrs-mongo-prod:
   nexpyrs-db-prod:
 
 

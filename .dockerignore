@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+.github
+
+# Environments
+.env
+.env.*
+.venv/
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.next/
+.angular/
+
+# Rust
+target/
+**/*.rs.bk
+
+# Java
+*.class
+
+# C++
+CMakeCache.txt
+CMakeFiles/
+
+# Solidity
+artifacts/
+cache/
+typechain-types/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose*.yml

@@ -19,7 +19,7 @@ services:
 
   # --- Database ---
   db:
-    image: postgres:17
+    build: ./database
     ports:
       - "5432:5432" # Direct access for DB tools
     environment:
@@ -34,10 +34,10 @@ services:
   # --- Frontend (Dev Mode) ---
   frontend:
     build:
-      context: ./web
+      context: ./ui_web
       dockerfile: Dockerfile
     volumes:
-      - ./web:/app
+      - ./ui_web:/app
       - /app/node_modules
     environment:
       - NEXT_PUBLIC_API_URL=http://api.localhost
@@ -54,10 +54,10 @@ services:
   # --- FastAPI (Reload Enabled) ---
   api:
     build:
-      context: ./api
-      dockerfile: Dockerfile.fastapi
+      context: .
+      dockerfile: api_fastapi/Dockerfile
     volumes:
-      - ./api/fastapi_app:/app/fastapi_app
+      - ./api_fastapi:/app/api_fastapi
     environment:
       - DEBUG=True
       - POSTGRES_SERVER=db
@@ -74,10 +74,10 @@ services:
   # --- Django (Dev Mode) ---
   django:
     build:
-      context: ./api
-      dockerfile: Dockerfile.django
+      context: .
+      dockerfile: api_django/Dockerfile
     volumes:
-      - ./api/django_app:/app/django_app
+      - ./api_django:/app/api_django
     environment:
       - DEBUG=True
       - POSTGRES_SERVER=db
@@ -90,8 +90,207 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.django.rule=Host(`django.localhost`)"
       - "traefik.http.services.django.loadbalancer.server.port=8001"
+  # --- Spring Boot API (Dev Mode) ---
+  api_spring:
+    build:
+      context: .
+      dockerfile: api_spring/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.spring.rule=Host(`spring.localhost`)"
+      - "traefik.http.services.spring.loadbalancer.server.port=8080"
+  # --- Drogon C++ API (Dev Mode) ---
+  api_dragon:
+    build:
+      context: .
+      dockerfile: api_dragon/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dragon.rule=Host(`drogon.localhost`)"
+      - "traefik.http.services.dragon.loadbalancer.server.port=8080"
+
+  # --- Actix Rust API (Dev Mode) ---
+  api_actix:
+    build:
+      context: .
+      dockerfile: api_actix/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actix.rule=Host(`actix.localhost`)"
+      - "traefik.http.services.actix.loadbalancer.server.port=8080"
+  # --- Redis ---
+  redis:
+    build:
+      context: .
+      dockerfile: redis/Dockerfile
+    ports:
+      - "6379:6379"
+    networks:
+      - nexnet
+
+  # --- RabbitMQ ---
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: rabbitmq/Dockerfile
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - nexnet
+
+  # --- Websocket Service ---
+  websocket:
+    build:
+      context: .
+      dockerfile: websocket/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.websocket.rule=Host(`ws.localhost`)"
+      - "traefik.http.services.websocket.loadbalancer.server.port=8080"
+
+  # --- Website (React) ---
+  website:
+    build:
+      context: .
+      dockerfile: website/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website.rule=Host(`website.localhost`)"
+      - "traefik.http.services.website.loadbalancer.server.port=5173"
+  # --- Next.js (Dev Mode) ---
+  next:
+    build:
+      context: .
+      dockerfile: ui_next/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.next.rule=Host(`next.localhost`)"
+      - "traefik.http.services.next.loadbalancer.server.port=3000"
+
+  # --- Angular (Dev Mode) ---
+  angular:
+    build:
+      context: .
+      dockerfile: ui_angular/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.angular.rule=Host(`angular.localhost`)"
+      - "traefik.http.services.angular.loadbalancer.server.port=4200"
+
+  # --- Vite (Dev Mode) ---
+  vite:
+    build:
+      context: .
+      dockerfile: ui_vite/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vite.rule=Host(`vite.localhost`)"
+      - "traefik.http.services.vite.loadbalancer.server.port=5173"
+
+  # --- Static Site (Dev Mode) ---
+  site:
+    build:
+      context: .
+      dockerfile: site/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.site.rule=Host(`site.localhost`)"
+      - "traefik.http.services.site.loadbalancer.server.port=80"
+  # --- Apache Kafka ---
+  kafka:
+    build:
+      context: .
+      dockerfile: kafka/Dockerfile
+    ports:
+      - "9092:9092"
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  # --- Kafka UI ---
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    networks:
+      - nexnet
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=NexPyRS_Cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kafka.rule=Host(`kafka.localhost`)"
+      - "traefik.http.services.kafka.loadbalancer.server.port=8080"
+  # --- Web3: Solidity / Ethereum (Hardhat) ---
+  hardhat-node:
+    build:
+      context: .
+      dockerfile: solidity/Dockerfile
+    ports:
+      - "8545:8545"
+    networks:
+      - nexnet
+
+  # --- Web3: Solana (Test Validator) ---
+  solana-validator:
+    build:
+      context: .
+      dockerfile: solana/Dockerfile
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+    networks:
+      - nexnet
+  # --- MCP Server ---
+  mcp:
+    build:
+      context: .
+      dockerfile: mcp/Dockerfile
+    networks:
+      - nexnet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp.rule=Host(`mcp.localhost`)"
+      - "traefik.http.services.mcp.loadbalancer.server.port=3001"
+  # --- MongoDB ---
+  mongodb:
+    build:
+      context: .
+      dockerfile: mongodb/Dockerfile
+    ports:
+      - "27017:27017"
+    networks:
+      - nexnet
+    volumes:
+      - nexpyrs-mongo-dev:/data/db
 
 volumes:
+  nexpyrs-mongo-dev:
   nexpyrs-db-dev:
 
 
