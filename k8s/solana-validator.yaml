@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solana-validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solana-validator
+  template:
+    metadata:
+      labels:
+        app: solana-validator
+    spec:
+      containers:
+      - name: solana-validator
+        image: nexpyrs-solana-validator
+        ports:
+        - containerPort: 8899
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: solana-validator
+spec:
+  selector:
+    app: solana-validator
+  ports:
+  - port: 8899

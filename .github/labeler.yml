@@ -1,0 +1,28 @@
+backend:
+  - any:
+      - 'api_*/**/*'
+      - 'lib_pip/**/*'
+      - 'lib_maven/**/*'
+      - 'lib_cargo/**/*'
+      - 'lib_cmake/**/*'
+
+frontend:
+  - any:
+      - 'ui_*/**/*'
+      - 'site/**/*'
+      - 'lib_npm/**/*'
+
+infrastructure:
+  - any:
+      - 'docker-compose*.yml'
+      - 'database/**/*'
+      - 'redis/**/*'
+      - 'rabbitmq/**/*'
+      - 'kafka/**/*'
+      - 'mcp/**/*'
+      - 'websocket/**/*'
+
+web3:
+  - any:
+      - 'solidity/**/*'
+      - 'solana/**/*'
