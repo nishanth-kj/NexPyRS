@@ -1,0 +1,31 @@
+services:
+  ganache:
+    image: trufflesuite/ganache:latest
+    container_name: ganache-local
+    ports:
+      - "8545:8545"
+    command: ["--host", "0.0.0.0", "--port", "8545", "--deterministic"]
+    networks:
+      - web3-net
+
+  solana-validator:
+    image: solanalabs/solana:latest
+    container_name: solana-local
+    ports:
+      - "8899:8899" # RPC port
+      - "8900:8900" # WebSocket port
+      - "9900:9900" # Faucet port
+    command:
+      - solana-test-validator
+      - --rpc-port
+      - "8899"
+      - --faucet-port
+      - "9900"
+      - --limit-ledger-size
+      - "50000000"
+    networks:
+      - web3-net
+
+networks:
+  web3-net:
+    driver: bridge
