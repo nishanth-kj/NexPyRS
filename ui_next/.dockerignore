@@ -1,0 +1,12 @@
+.git
+.github
+node_modules
+.next
+api
+rustsvc
+grpcsvc
+fastapi_template
+target
+dist
+.venv
+__pycache__
