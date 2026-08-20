@@ -1,0 +1,10 @@
+{
+  "name": "nexpyrs-solidity",
+  "version": "1.0.0",
+  "scripts": {
+    "node": "hardhat node"
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.0"
+  }
+}
