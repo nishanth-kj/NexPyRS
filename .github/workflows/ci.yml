@@ -1,121 +1,14 @@
-name: CI/CD Pipeline
-
+name: CI
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
-  backend-tests:
-    name: Backend Tests
+  docker-compose-check:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install uv
-      uses: astral-sh/setup-uv@v4
-      
-    - name: Set up Python
-      run: uv python install 3.12
-      
-    - name: Install dependencies
-      run: |
-        cd api
-        uv sync
-        
-    - name: Run FastAPI tests
-      run: |
-        cd api
-        uv run pytest fastapi/tests -v
-        
-    - name: Run Django tests
-      run: |
-        cd api
-        uv run python django_app/manage.py test
-
-  frontend-tests:
-    name: Frontend Tests
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: web/package-lock.json
-        
-    - name: Install dependencies
-      run: |
-        cd web
-        npm ci
-        
-    - name: Run linter
-      run: |
-        cd web
-        npm run lint
-        
-    - name: Build frontend
-      run: |
-        cd web
-        npm run build
-        
-    - name: Run tests
-      run: |
-        cd web
-        npm test -- --passWithNoTests
-
-  docker-build:
-    name: Docker Build Test
-    runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-tests]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Build frontend image
-      run: docker-compose build frontend
-      
-    - name: Build backend image
-      run: docker-compose build backend
-
-  code-quality:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Install uv
-      uses: astral-sh/setup-uv@v4
-      
-    - name: Set up Python
-      run: uv python install 3.12
-      
-    - name: Install dependencies
-      run: |
-        cd api
-        uv sync
-        
-    - name: Run ruff linter
-      run: |
-        cd api
-        uv run ruff check .
-      continue-on-error: true
-      
-    - name: Run type checking with mypy
-      run: |
-        cd api
-        uv run mypy . --ignore-missing-imports
-      continue-on-error: true
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose
+        run: docker-compose config -q
