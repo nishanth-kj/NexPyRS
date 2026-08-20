@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hardhat-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hardhat-node
+  template:
+    metadata:
+      labels:
+        app: hardhat-node
+    spec:
+      containers:
+      - name: hardhat-node
+        image: nexpyrs-hardhat-node
+        ports:
+        - containerPort: 8545
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hardhat-node
+spec:
+  selector:
+    app: hardhat-node
+  ports:
+  - port: 8545
