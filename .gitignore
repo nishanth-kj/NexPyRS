@@ -4,6 +4,8 @@
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 ENV/
@@ -18,21 +20,41 @@ dist/
 build/
 *.egg-info/
 
-# Node / JS
+# Node / JS / Angular / Vite / Next
 node_modules/
 .npm/
 .yarn/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Next.js
 .next/
-# out/
+out/
+.angular/
 
-# Rust
+# Rust / Solana
 target/
 **/*.rs.bk
+test-ledger/
+
+# Java / Maven
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+
+# C++ / CMake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+*.cmake
+install_manifest.txt
+compile_commands.json
+
+# Solidity / Hardhat
+artifacts/
+cache/
+typechain-types/
 
 # IDEs
 .vscode/
