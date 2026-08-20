@@ -1,4 +1,4 @@
-FROM rust:1.76-slim
+FROM rust:1.97-slim
 
 # Install dependencies for Solana and Anchor
 RUN apt-get update && apt-get install -y \
