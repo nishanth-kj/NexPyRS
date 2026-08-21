@@ -42,7 +42,7 @@ jobs:
         run: npm ci
       
       - name: Build with Next.js for GitHub Pages
-        run: npm run build:github
+        run: npm run build
         env:
           NEXT_PUBLIC_GITHUB_PAGES: 'true'
       
