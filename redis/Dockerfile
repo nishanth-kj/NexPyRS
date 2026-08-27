@@ -1,3 +1,3 @@
-FROM redis:7-alpine
+FROM redis:8-alpine
 RUN apk update && apk add --no-cache ca-certificates
 CMD ["redis-server"]
